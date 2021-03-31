@@ -48,7 +48,7 @@ def create_pulumi_program(content: str):
 
 
 @app.route("/sites/new", methods=["GET", "POST"])
-def create():
+def create_page():
     """creates new sites"""
     if request.method == "POST":
         stack_name = request.form.get("site-id")
@@ -58,6 +58,7 @@ def create():
             return create_pulumi_program(content)
 
         try:
+            flash("Creating site...")
             # create a new stack, generating our pulumi program on the fly from the POST body
             stack = auto.create_stack(stack_name=stack_name,
                                       project_name=project_name,
@@ -65,8 +66,9 @@ def create():
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
             up_res = stack.up(on_output=print)
+            flash(f"Successfully created site '{stack_name}'")
         except auto.StackAlreadyExistsError:
-            flash(f"Site with name '{stack_name}' already exists")
+            flash(f"Site with name '{stack_name}' already exists, pick a unique name")
         except Exception as exn:
             flash(str(exn))
 
@@ -74,14 +76,23 @@ def create():
 
 
 @app.route("/sites", methods=["GET"])
-def list_handler():
+def list_page():
     """lists all sites"""
+    sites = []
     try:
         ws = auto.LocalWorkspace(project_settings=auto.ProjectSettings(name=project_name, runtime="python"))
-        stacks = ws.list_stacks()
-        return jsonify(ids=[stack.name for stack in stacks])
+        all_stacks = ws.list_stacks()
+        for stack in all_stacks:
+            stack = auto.select_stack(stack_name=stack.name,
+                                      project_name=project_name,
+                                      # no-op program, just to get outputs
+                                      program=lambda *args: None)
+            outs = stack.outputs()
+            sites.append({"name": stack.name, "url": outs["website_url"].value})
     except Exception as exn:
-        return make_response(str(exn), 500)
+        flash(str(exn))
+
+    return render_template("index.html", sites=sites)
 
 
 @app.route("/sites/<string:id>", methods=["GET"])
