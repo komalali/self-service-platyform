@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<title>Pulumipus' Self-Service Platyform - {% block title %}{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<nav>
+  <h1>Pulumipus' Self-Service Platyform</h1>
+  <ul>
+    <li><a href="{{ url_for('create') }}">Create</a>
+  </ul>
+</nav>
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</section>
