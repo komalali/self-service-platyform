@@ -1,7 +1,7 @@
 import pulumi
 from pulumi.x import automation as auto
 from pulumi_aws import s3
-from flask import Flask, request, flash, render_template, url_for, redirect
+from flask import Flask, request, flash, render_template, url_for, redirect, logging
 import requests
 
 
@@ -54,7 +54,10 @@ def create_site():
     if request.method == "POST":
         stack_name = request.form.get("site-id")
         file_url = request.form.get("file-url")
-        site_content = requests.get(file_url).text
+        if file_url:
+            site_content = requests.get(file_url).text
+        else:
+            site_content = request.form.get("site-content")
 
         def pulumi_program():
             return create_pulumi_program(site_content)
@@ -70,8 +73,6 @@ def create_site():
             flash(f"Successfully created site '{stack_name}'", category="info")
         except auto.StackAlreadyExistsError:
             flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="error")
-        except Exception as exn:
-            flash(str(exn))
 
         return redirect(url_for("list_sites"))
 
@@ -104,8 +105,10 @@ def update_site(id: str):
 
     if request.method == "POST":
         file_url = request.form.get("file-url")
-        site_content = requests.get(file_url).text
-
+        if file_url:
+            site_content = requests.get(file_url).text
+        else:
+            site_content = request.form.get("site-content")
         try:
             def pulumi_program():
                 create_pulumi_program(site_content)
