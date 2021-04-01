@@ -8,7 +8,7 @@ We've exposed all of the CRUD operations, so you can `update` and `delete` your 
 
 This idea is just a starting point for where you might start to build out your own infrastructure platform. Static sites are just one option, but you could also provision databases or VMs using a similar self-service interface. Pulumi's Automation API allows you to abstract away all of the "cloud stuff" that your users might not care to know, and bring them just the details they need, at the click of a button.
 
-**WARNING**: This is just a demo! I have not followed *any* security best-practices, so please don't deploy this thing to production 
+**WARNING**: This is just a demo! I have not followed *any* security best-practices, so please don't deploy this thing to production.
 
 ## Instructions
 
