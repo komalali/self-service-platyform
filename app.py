@@ -70,9 +70,9 @@ def create_site():
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
             stack.up(on_output=print)
-            flash(f"Successfully created site '{stack_name}'", category="info")
+            flash(f"Successfully created site '{stack_name}'", category="success")
         except auto.StackAlreadyExistsError:
-            flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="error")
+            flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="danger")
 
         return redirect(url_for("list_sites"))
 
@@ -94,7 +94,7 @@ def list_sites():
             outs = stack.outputs()
             sites.append({"name": stack.name, "url": outs["website_url"].value})
     except Exception as exn:
-        flash(str(exn))
+        flash(str(exn), category="danger")
 
     return render_template("index.html", sites=sites)
 
@@ -118,11 +118,11 @@ def update_site(id: str):
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
             stack.up(on_output=print)
-            flash(f"Site '{stack_name}' successfully updated!", category="info")
+            flash(f"Site '{stack_name}' successfully updated!", category="success")
         except auto.ConcurrentUpdateError:
-            flash(f"Error: site '{stack_name}' already has an update in progress", category="error")
+            flash(f"Error: site '{stack_name}' already has an update in progress", category="danger")
         except Exception as exn:
-            flash(str(exn))
+            flash(str(exn), category="danger")
 
         return redirect(url_for("list_sites"))
 
@@ -139,10 +139,10 @@ def delete_site(id: str):
                                   program=lambda *args: None)
         stack.destroy(on_output=print)
         stack.workspace.remove_stack(stack_name)
-        flash(f"Site '{stack_name}' successfully deleted!", category="info")
+        flash(f"Site '{stack_name}' successfully deleted!", category="success")
     except auto.ConcurrentUpdateError:
-        flash(f"Error: Site '{stack_name}' already has update in progress", category="error")
+        flash(f"Error: Site '{stack_name}' already has update in progress", category="danger")
     except Exception as exn:
-        flash(str(exn))
+        flash(str(exn), category="danger")
 
     return redirect(url_for("list_sites"))

@@ -13,12 +13,14 @@
     </ul>
   </header>
 </div>
-<section class="container-md">
-  <header>
-    <span class="fs-4">{% block header %}{% endblock %}</span>
-  </header>
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
+<section class="container-md px-4">
+  <div>
+    <header class="row gy-4">
+      <span class="fs-4">{% block header %}{% endblock %}</span>
+      {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+      {% endfor %}
+    </header>
+  </div>
   {% block content %}{% endblock %}
 </section>
