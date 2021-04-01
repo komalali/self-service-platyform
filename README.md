@@ -1,12 +1,33 @@
 # Static Website Platyform
 
-This application demonstrates how to run Automation API in an HTTP server to expose infrastructure as RESTful resources. In our case, we've defined and exposed a static website `site` that exposes all of the `CRUD` operations plus list. Users can hit our REST endpoint and create custom static websites by specifying the `content` field in the `POST` body. All of our infrastructure is defined in `inline` programs that are constructed and altered on the fly based on input parsed from user-specified `POST` bodies. Be sure to read through the handlers to see how Automation API detect structured error cases such as update conflicts (409), and missing stacks (404).
+This application represents a starting point for how you might develop a self-service infrastructure platform on top of [Pulumi](https://pulumi.com)'s [Automation API](https://www.pulumi.com/blog/automation-api/).
+
+In this case, we've used Python, [Flask](https://flask.palletsprojects.com/en/1.1.x/) and [Jinja](https://jinja.palletsprojects.com/en/2.11.x/) templates to create a website that allows users to deploy their own static websites, either by passing in a URL to an HTML file or by manually typing out the content. 
+
+We've exposed all of the CRUD operations, so you can `update` and `delete` your websites as well.
+
+This idea is just a starting point for where you might start to build out your own infrastructure platform. Static sites are just one option, but you could also provision databases or VMs using a similar self-service interface. Pulumi's Automation API allows you to abstract away all of the "cloud stuff" that your users might not care to know, and bring them just the details they need, at the click of a button.
+
+**WARNING**: This is just a demo! I have not followed *any* security best-practices, so please don't deploy this thing to production 
+
+## Instructions
 
 To run this example you'll need a few pre-reqs:
 1. A Pulumi CLI installation ([v2.10.1](https://www.pulumi.com/docs/get-started/install/versions/) or later)
 2. The AWS CLI, with appropriate credentials.
 
-In one terminal window, run the HTTP server that uses Automation API. It will also stream update logs:
+First, set up your virtual environment:
+1. ```shell
+   $ python3 -m venv venv
+   ```
+2. ```shell
+   $ venv/bin/python3 -m pip install --upgrade pip
+   ```
+3. ```shell
+   $ venv/bin/pip install -r requirements.txt
+   ```
+
+In a terminal window, run the HTTP server that uses Automation API. It will also stream update logs:
 
 ```bash
 $ FLASK_RUN_PORT=1337 FLASK_ENV=development venv/bin/flask run
@@ -17,3 +38,7 @@ $ FLASK_RUN_PORT=1337 FLASK_ENV=development venv/bin/flask run
  * Debugger is active!
  * Debugger PIN: 328-006-235
 ```
+
+Then, in your browser, navigate to `localhost:1337/sites` and you should see a page matching the image below. Click around and start exploring!
+
+![Platyform](screenshot.png)
