@@ -12,7 +12,7 @@ def ensure_plugins():
 ensure_plugins()
 app = Flask(__name__)
 app.secret_key = "secret"
-project_name = "pulumi_over_http"
+project_name = "static-site-platyform"
 
 
 # This function defines our pulumi s3 static website in terms of the content that the caller passes in.
@@ -64,12 +64,14 @@ def create_site():
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
-            up_res = stack.up(on_output=print)
+            stack.up(on_output=print)
             flash(f"Successfully created site '{stack_name}'", category="info")
         except auto.StackAlreadyExistsError:
             flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="error")
         except Exception as exn:
             flash(str(exn))
+
+        return redirect(url_for("list_sites"))
 
     return render_template("create.html")
 
@@ -94,27 +96,31 @@ def list_sites():
     return render_template("index.html", sites=sites)
 
 
-@app.route("/sites/<string:id>", methods=["UPDATE"])
+@app.route("/sites/<string:id>/update", methods=["GET", "POST"])
 def update_site(id: str):
     stack_name = id
-    content = request.data.get('content')
 
-    try:
-        def pulumi_program():
-            create_pulumi_program(content)
-        stack = auto.select_stack(stack_name=stack_name,
-                                  project_name=project_name,
-                                  program=pulumi_program)
-        stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
-        # deploy the stack, tailing the logs to stdout
-        up_res = stack.up(on_output=print)
-        return jsonify(id=stack_name, url=up_res.outputs["website_url"].value)
-    except auto.StackNotFoundError:
-        return make_response(f"stack '{stack_name}' does not exist", 404)
-    except auto.ConcurrentUpdateError:
-        return make_response(f"stack '{stack_name}' already has update in progress", 409)
-    except Exception as exn:
-        return make_response(str(exn), 500)
+    if request.method == "POST":
+        content = request.form.get("site-content")
+
+        try:
+            def pulumi_program():
+                create_pulumi_program(content)
+            stack = auto.select_stack(stack_name=stack_name,
+                                      project_name=project_name,
+                                      program=pulumi_program)
+            stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
+            # deploy the stack, tailing the logs to stdout
+            stack.up(on_output=print)
+            flash(f"Site '{stack_name}' successfully updated!", category="info")
+        except auto.ConcurrentUpdateError:
+            flash(f"Error: site '{stack_name}' already has an update in progress", category="error")
+        except Exception as exn:
+            flash(str(exn))
+
+        return redirect(url_for("list_sites"))
+
+    return render_template("update.html", name=stack_name)
 
 
 @app.route("/sites/<string:id>/delete", methods=["POST"])
@@ -129,7 +135,7 @@ def delete_site(id: str):
         stack.workspace.remove_stack(stack_name)
         flash(f"Site '{stack_name}' successfully deleted!", category="info")
     except auto.ConcurrentUpdateError:
-        flash(f"site '{stack_name}' already has update in progress", category="error")
+        flash(f"Error: Site '{stack_name}' already has update in progress", category="error")
     except Exception as exn:
         flash(str(exn))
 

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Update site '{{ name }}'{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="site-content">Content:</label>
+    <textarea id="site-content" name="site-content" cols="50" rows="5" placeholder="Enter the updated HTML..." required></textarea>
+    <input type="submit" value="Update">
+  </form>
+{% endblock %}
