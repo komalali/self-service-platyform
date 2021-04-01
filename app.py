@@ -46,6 +46,7 @@ def create_pulumi_program(content: str):
 
     # Export the website URL
     pulumi.export("website_url", site_bucket.website_endpoint)
+    pulumi.export("website_content", index_content)
 
 
 @app.route("/sites/new", methods=["GET", "POST"])
@@ -123,10 +124,18 @@ def update_site(id: str):
             flash(f"Error: site '{stack_name}' already has an update in progress", category="danger")
         except Exception as exn:
             flash(str(exn), category="danger")
-
         return redirect(url_for("list_sites"))
 
-    return render_template("update.html", name=stack_name)
+    stack = auto.select_stack(stack_name=stack_name,
+                              project_name=project_name,
+                              # noop just to get the outputs
+                              program=lambda *args: None)
+    outs = stack.outputs()
+    content_output = outs.get("website_content")
+    print(outs)
+    print(content_output)
+    content = content_output.value if content_output else None
+    return render_template("update.html", name=stack_name, content=content)
 
 
 @app.route("/sites/<string:id>/delete", methods=["POST"])

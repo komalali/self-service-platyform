@@ -18,7 +18,7 @@
     <header class="row gy-4">
       <span class="fs-4">{% block header %}{% endblock %}</span>
       {% for category, message in get_flashed_messages(with_categories=true) %}
-        <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+      <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
       {% endfor %}
     </header>
   </div>
