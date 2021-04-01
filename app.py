@@ -1,7 +1,7 @@
 import pulumi
 from pulumi.x import automation as auto
 from pulumi_aws import s3
-from flask import Flask, request, make_response, jsonify, flash, render_template
+from flask import Flask, request, make_response, jsonify, flash, render_template, url_for, redirect
 
 
 def ensure_plugins():
@@ -48,7 +48,7 @@ def create_pulumi_program(content: str):
 
 
 @app.route("/sites/new", methods=["GET", "POST"])
-def create_page():
+def create_site():
     """creates new sites"""
     if request.method == "POST":
         stack_name = request.form.get("site-id")
@@ -58,7 +58,6 @@ def create_page():
             return create_pulumi_program(content)
 
         try:
-            flash("Creating site...")
             # create a new stack, generating our pulumi program on the fly from the POST body
             stack = auto.create_stack(stack_name=stack_name,
                                       project_name=project_name,
@@ -66,9 +65,9 @@ def create_page():
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
             up_res = stack.up(on_output=print)
-            flash(f"Successfully created site '{stack_name}'")
+            flash(f"Successfully created site '{stack_name}'", category="info")
         except auto.StackAlreadyExistsError:
-            flash(f"Site with name '{stack_name}' already exists, pick a unique name")
+            flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="error")
         except Exception as exn:
             flash(str(exn))
 
@@ -76,7 +75,7 @@ def create_page():
 
 
 @app.route("/sites", methods=["GET"])
-def list_page():
+def list_sites():
     """lists all sites"""
     sites = []
     try:
@@ -95,24 +94,8 @@ def list_page():
     return render_template("index.html", sites=sites)
 
 
-@app.route("/sites/<string:id>", methods=["GET"])
-def get_handler(id: str):
-    stack_name = id
-    try:
-        stack = auto.select_stack(stack_name=stack_name,
-                                  project_name=project_name,
-                                  # no-op program, just to get outputs
-                                  program=lambda *args: None)
-        outs = stack.outputs()
-        return jsonify(id=stack_name, url=outs["website_url"].value)
-    except auto.StackNotFoundError:
-        return make_response(f"stack '{stack_name}' does not exist", 404)
-    except Exception as exn:
-        return make_response(str(exn), 500)
-
-
 @app.route("/sites/<string:id>", methods=["UPDATE"])
-def update_handler(id: str):
+def update_site(id: str):
     stack_name = id
     content = request.data.get('content')
 
@@ -134,8 +117,8 @@ def update_handler(id: str):
         return make_response(str(exn), 500)
 
 
-@app.route("/sites/<string:id>", methods=["DELETE"])
-def delete_handler(id: str):
+@app.route("/sites/<string:id>/delete", methods=["POST"])
+def delete_site(id: str):
     stack_name = id
     try:
         stack = auto.select_stack(stack_name=stack_name,
@@ -144,10 +127,10 @@ def delete_handler(id: str):
                                   program=lambda *args: None)
         stack.destroy(on_output=print)
         stack.workspace.remove_stack(stack_name)
-        return jsonify(message=f"stack '{stack_name}' successfully removed!")
-    except auto.StackNotFoundError:
-        return make_response(f"stack '{stack_name}' does not exist", 404)
+        flash(f"Site '{stack_name}' successfully deleted!", category="info")
     except auto.ConcurrentUpdateError:
-        return make_response(f"stack '{stack_name}' already has update in progress", 409)
+        flash(f"site '{stack_name}' already has update in progress", category="error")
     except Exception as exn:
-        return make_response(str(exn), 500)
+        flash(str(exn))
+
+    return redirect(url_for("list_sites"))

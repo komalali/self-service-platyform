@@ -6,6 +6,12 @@
 
 {% block content %}
   {% for site in sites %}
-    <div class="site-link"><a href="http://{{ site["url"] }}">{{ site["name"] }}</a></div>
+    <div class="site-link">
+      <a href="http://{{ site["url"] }}">{{ site["name"] }}</a>
+      <a class="action" href="{{ url_for("update_site", id=site["name"]) }}">Edit</a>
+      <form action="{{ url_for("delete_site", id=site["name"]) }}" method="post">
+        <input class="danger" type="submit" value="Delete">
+      </form>
+    </div>
   {% endfor %}
 {% endblock %}
