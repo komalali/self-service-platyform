@@ -1,15 +1,26 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Create new static site{% endblock %}</h1>
+  {% block title %}Create new static site{% endblock %}
 {% endblock %}
 
 {% block content %}
-<form method="post">
-  <label for="site-id">Name:</label>
-  <input type="text" id="site-id" name="site-id" placeholder="Enter a name for your site..." required>
-  <label for="site-content">Content:</label>
-  <textarea id="site-content" name="site-content" cols="50" rows="5" placeholder="Enter some HTML..." required></textarea>
-  <input type="submit" value="Create">
-</form>
+<div class="p-2">
+  <form method="post">
+    <div class="mb-3">
+      <label for="site-id" class="form-label">Name</label>
+      <input type="text" class="form-control" id="site-id" aria-describedby="nameHelp">
+      <div id="nameHelp" class="form-text">Choose a unique name as a label for your website</div>
+    </div>
+    <div class="mb-3">
+      <label for="file-url" class="form-label">File URL</label>
+      <input type="text" class="form-control" id="file-url" required>
+    </div>
+    <div class="mb-3">
+      <label for="site-content" class="form-label">Content</label>
+      <textarea class="form-control" id="site-content" rows="5"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+</div>
 {% endblock %}

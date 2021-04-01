@@ -1,7 +1,8 @@
 import pulumi
 from pulumi.x import automation as auto
 from pulumi_aws import s3
-from flask import Flask, request, make_response, jsonify, flash, render_template, url_for, redirect
+from flask import Flask, request, flash, render_template, url_for, redirect
+import requests
 
 
 def ensure_plugins():
@@ -52,10 +53,11 @@ def create_site():
     """creates new sites"""
     if request.method == "POST":
         stack_name = request.form.get("site-id")
-        content = request.form.get("site-content")
+        file_url = request.form.get("file-url")
+        site_content = requests.get(file_url).text
 
         def pulumi_program():
-            return create_pulumi_program(content)
+            return create_pulumi_program(site_content)
 
         try:
             # create a new stack, generating our pulumi program on the fly from the POST body
@@ -101,11 +103,12 @@ def update_site(id: str):
     stack_name = id
 
     if request.method == "POST":
-        content = request.form.get("site-content")
+        file_url = request.form.get("file-url")
+        site_content = requests.get(file_url).text
 
         try:
             def pulumi_program():
-                create_pulumi_program(content)
+                create_pulumi_program(site_content)
             stack = auto.select_stack(stack_name=stack_name,
                                       project_name=project_name,
                                       program=pulumi_program)

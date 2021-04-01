@@ -1,19 +1,33 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1>{% block title %}Sites{% endblock %}</h1>
+  {% block title %}Site Directory{% endblock %}
 {% endblock %}
 
 {% block content %}
-  {% for site in sites %}
-    <div class="site-link">
-      <a href="http://{{ site["url"] }}">{{ site["name"] }}</a>
-      <form action="{{ url_for("update_site", id=site["name"]) }}" method="get">
-        <input class="info" type="submit" value="Update">
-      </form>
-      <form action="{{ url_for("delete_site", id=site["name"]) }}" method="post">
-        <input class="danger" type="submit" value="Delete">
-      </form>
-    </div>
-  {% endfor %}
+  <table class="table">
+    <tbody>
+      {% for site in sites %}
+        <tr>
+          <td class="align-bottom" colspan="4">
+            <div class="p-1">
+              <a href="http://{{ site["url"] }}" class="fs-5 align-bottom">{{ site["name"] }}</a>
+            </div>
+          </td>
+          <td>
+            <div class="float-end p-1">
+              <form action="{{ url_for("delete_site", id=site["name"]) }}" method="post">
+                <input class="btn btn-danger" type="submit" value="Delete">
+              </form>
+            </div>
+            <div class="float-end p-1">
+              <form action="{{ url_for("update_site", id=site["name"]) }}" method="get">
+                <input class="btn btn-primary" type="submit" value="Update">
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}
