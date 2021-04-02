@@ -6,7 +6,7 @@ In this case, we've used Python, [Flask](https://flask.palletsprojects.com/en/1.
 
 We've exposed all of the CRUD operations, so you can `update` and `delete` your websites as well.
 
-This idea is just a starting point for how you might build out your own infrastructure platform. Static sites are just one option, but you could also provision databases or VMs (or any other cloud resources) using a similar self-service interface. Alternatively, you could build you could expose this functionality as a [REST API](https://github.com/pulumi/automation-api-examples/tree/main/python/pulumi_over_http), allowing deployments via CLI in addition to a web interface.
+This idea is just a starting point for how you might build out your own infrastructure platform. Static sites are just one option, but you could also provision databases or VMs (or any other cloud resources) using a similar self-service interface. Alternatively, you could expose this functionality as a [REST API](https://github.com/pulumi/automation-api-examples/tree/main/python/pulumi_over_http), allowing deployments via CLI in addition to a web interface.
 
 Pulumi's Automation API allows you to abstract away all of the "cloud stuff" that your users might not care to know, and bring them just the details they need, at the click of a button. The possibilities are endless!
 
