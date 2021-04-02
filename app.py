@@ -34,7 +34,7 @@ def create_pulumi_program(content: str):
     # Set the access policy for the bucket so all objects are readable
     s3.BucketPolicy("bucket-policy",
                     bucket=site_bucket.id,
-                    policy=json.dumps({
+                    policy={
                         "Version": "2012-10-17",
                         "Statement": {
                             "Effect": "Allow",
@@ -43,7 +43,7 @@ def create_pulumi_program(content: str):
                             # Policy refers to bucket explicitly
                             "Resource": [pulumi.Output.concat("arn:aws:s3:::", site_bucket.id, "/*")]
                         },
-                    }))
+                    })
 
     # Export the website URL
     pulumi.export("website_url", site_bucket.website_endpoint)
@@ -71,7 +71,7 @@ def create_site():
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
-            stack.up(on_output=print)
+            stack.up(on_output=app.logger.info)
             flash(f"Successfully created site '{stack_name}'", category="success")
         except auto.StackAlreadyExistsError:
             flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="danger")
@@ -120,7 +120,7 @@ def update_site(id: str):
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
-            stack.up(on_output=print)
+            stack.up(on_output=app.logger.info)
             flash(f"Site '{stack_name}' successfully updated!", category="success")
         except auto.ConcurrentUpdateError:
             flash(f"Error: site '{stack_name}' already has an update in progress", category="danger")
@@ -146,7 +146,7 @@ def delete_site(id: str):
                                   project_name=project_name,
                                   # noop program for destroy
                                   program=lambda: None)
-        stack.destroy(on_output=print)
+        stack.destroy(on_output=app.logger.info)
         stack.workspace.remove_stack(stack_name)
         flash(f"Site '{stack_name}' successfully deleted!", category="success")
     except auto.ConcurrentUpdateError:
