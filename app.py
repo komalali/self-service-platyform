@@ -57,9 +57,9 @@ def create_site():
         stack_name = request.form.get("site-id")
         file_url = request.form.get("file-url")
         if file_url:
-            site_content= requests.get(file_url).text
+            site_content = requests.get(file_url).text
         else:
-            site_content= request.form.get("site-content")
+            site_content = request.form.get("site-content")
 
         def pulumi_program():
             return create_pulumi_program(str(site_content))
