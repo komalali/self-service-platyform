@@ -1,9 +1,10 @@
+import json
+import requests
+from flask import Flask, request, flash, render_template, url_for, redirect
+
 import pulumi
 from pulumi.x import automation as auto
 from pulumi_aws import s3
-from flask import Flask, request, flash, render_template, url_for, redirect, logging
-import requests
-
 
 def ensure_plugins():
     ws = auto.LocalWorkspace()
@@ -33,7 +34,7 @@ def create_pulumi_program(content: str):
     # Set the access policy for the bucket so all objects are readable
     s3.BucketPolicy("bucket-policy",
                     bucket=site_bucket.id,
-                    policy={
+                    policy=json.dumps({
                         "Version": "2012-10-17",
                         "Statement": {
                             "Effect": "Allow",
@@ -42,7 +43,7 @@ def create_pulumi_program(content: str):
                             # Policy refers to bucket explicitly
                             "Resource": [pulumi.Output.concat("arn:aws:s3:::", site_bucket.id, "/*")]
                         },
-                    })
+                    }))
 
     # Export the website URL
     pulumi.export("website_url", site_bucket.website_endpoint)
@@ -56,16 +57,16 @@ def create_site():
         stack_name = request.form.get("site-id")
         file_url = request.form.get("file-url")
         if file_url:
-            site_content = requests.get(file_url).text
+            site_content= requests.get(file_url).text
         else:
-            site_content = request.form.get("site-content")
+            site_content= request.form.get("site-content")
 
         def pulumi_program():
-            return create_pulumi_program(site_content)
+            return create_pulumi_program(str(site_content))
 
         try:
             # create a new stack, generating our pulumi program on the fly from the POST body
-            stack = auto.create_stack(stack_name=stack_name,
+            stack = auto.create_stack(stack_name=str(stack_name),
                                       project_name=project_name,
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
@@ -91,7 +92,7 @@ def list_sites():
             stack = auto.select_stack(stack_name=stack.name,
                                       project_name=project_name,
                                       # no-op program, just to get outputs
-                                      program=lambda *args: None)
+                                      program=lambda: None)
             outs = stack.outputs()
             sites.append({"name": stack.name, "url": outs["website_url"].value})
     except Exception as exn:
@@ -110,9 +111,10 @@ def update_site(id: str):
             site_content = requests.get(file_url).text
         else:
             site_content = request.form.get("site-content")
+
         try:
             def pulumi_program():
-                create_pulumi_program(site_content)
+                create_pulumi_program(str(site_content))
             stack = auto.select_stack(stack_name=stack_name,
                                       project_name=project_name,
                                       program=pulumi_program)
@@ -129,7 +131,7 @@ def update_site(id: str):
     stack = auto.select_stack(stack_name=stack_name,
                               project_name=project_name,
                               # noop just to get the outputs
-                              program=lambda *args: None)
+                              program=lambda: None)
     outs = stack.outputs()
     content_output = outs.get("website_content")
     print(outs)
@@ -145,7 +147,7 @@ def delete_site(id: str):
         stack = auto.select_stack(stack_name=stack_name,
                                   project_name=project_name,
                                   # noop program for destroy
-                                  program=lambda *args: None)
+                                  program=lambda: None)
         stack.destroy(on_output=print)
         stack.workspace.remove_stack(stack_name)
         flash(f"Site '{stack_name}' successfully deleted!", category="success")
