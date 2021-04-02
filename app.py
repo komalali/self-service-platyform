@@ -71,7 +71,7 @@ def create_site():
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
-            stack.up(on_output=app.logger.info)
+            stack.up(on_output=print)
             flash(f"Successfully created site '{stack_name}'", category="success")
         except auto.StackAlreadyExistsError:
             flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="danger")
@@ -120,7 +120,7 @@ def update_site(id: str):
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
-            stack.up(on_output=app.logger.info)
+            stack.up(on_output=print)
             flash(f"Site '{stack_name}' successfully updated!", category="success")
         except auto.ConcurrentUpdateError:
             flash(f"Error: site '{stack_name}' already has an update in progress", category="danger")
@@ -146,7 +146,7 @@ def delete_site(id: str):
                                   project_name=project_name,
                                   # noop program for destroy
                                   program=lambda: None)
-        stack.destroy(on_output=app.logger.info)
+        stack.destroy(on_output=print)
         stack.workspace.remove_stack(stack_name)
         flash(f"Site '{stack_name}' successfully deleted!", category="success")
     except auto.ConcurrentUpdateError:
