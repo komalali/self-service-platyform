@@ -134,8 +134,6 @@ def update_site(id: str):
                               program=lambda: None)
     outs = stack.outputs()
     content_output = outs.get("website_content")
-    print(outs)
-    print(content_output)
     content = content_output.value if content_output else None
     return render_template("update.html", name=stack_name, content=content)
 
