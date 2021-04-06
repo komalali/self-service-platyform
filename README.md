@@ -1,4 +1,4 @@
-# Static Website Platyform
+# Self Service Infrastructure Platyform
 
 This application represents a starting point for how you might develop a self-service infrastructure platform on top of [Pulumi](https://pulumi.com)'s [Automation API](https://www.pulumi.com/blog/automation-api/).
 
