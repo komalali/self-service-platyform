@@ -7,7 +7,7 @@
         <div class="card-body">
           <h5 class="card-title">Static Websites</h5>
           <p class="card-text">Deploy your own static website in seconds!</p>
-          <a href="{{ url_for('list_sites') }}" class="btn btn-primary">Get started</a>
+          <a href="{{ url_for("sites.list_sites") }}" class="btn btn-primary">Get started</a>
         </div>
       </div>
     </div>
@@ -16,7 +16,7 @@
         <div class="card-body">
           <h5 class="card-title">Databases</h5>
           <p class="card-text">Provision a SQL database for your project.</p>
-          <a href="#" class="btn btn-primary">Get started</a>
+          <a href="{{ url_for("databases.list_databases") }}" class="btn btn-primary">Get started</a>
         </div>
       </div>
     </div>

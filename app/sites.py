@@ -1,20 +1,12 @@
 import json
 import requests
-from flask import Flask, request, flash, render_template, url_for, redirect
+from flask import g, current_app, Blueprint, request, flash, redirect, url_for, render_template
 
 import pulumi
 from pulumi.x import automation as auto
 from pulumi_aws import s3
 
-def ensure_plugins():
-    ws = auto.LocalWorkspace()
-    ws.install_plugin("aws", "v3.23.0")
-
-
-ensure_plugins()
-app = Flask(__name__)
-app.secret_key = "secret"
-project_name = "static-site-platyform"
+bp = Blueprint("sites", __name__, url_prefix="/sites")
 
 
 # This function defines our pulumi s3 static website in terms of the content that the caller passes in.
@@ -50,18 +42,7 @@ def create_pulumi_program(content: str):
     pulumi.export("website_content", index_content)
 
 
-@app.route("/", methods=["GET"])
-def index():
-    """index page"""
-    return render_template("index.html")
-
-@app.route("/databases", methods=["GET"])
-def list_databases():
-    """index page"""
-    return render_template("databases/index.html")
-
-
-@app.route("/sites/new", methods=["GET", "POST"])
+@bp.route("/new", methods=["GET", "POST"])
 def create_site():
     """creates new sites"""
     if request.method == "POST":
@@ -78,7 +59,7 @@ def create_site():
         try:
             # create a new stack, generating our pulumi program on the fly from the POST body
             stack = auto.create_stack(stack_name=str(stack_name),
-                                      project_name=project_name,
+                                      project_name=g.sites,
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
@@ -92,16 +73,16 @@ def create_site():
     return render_template("sites/create.html")
 
 
-@app.route("/sites", methods=["GET"])
+@bp.route("/", methods=["GET"])
 def list_sites():
     """lists all sites"""
     sites = []
     try:
-        ws = auto.LocalWorkspace(project_settings=auto.ProjectSettings(name=project_name, runtime="python"))
+        ws = auto.LocalWorkspace(project_settings=auto.ProjectSettings(name=current_app.config['PROJECT_NAME'], runtime="python"))
         all_stacks = ws.list_stacks()
         for stack in all_stacks:
             stack = auto.select_stack(stack_name=stack.name,
-                                      project_name=project_name,
+                                      project_name=current_app.config['PROJECT_NAME'],
                                       # no-op program, just to get outputs
                                       program=lambda: None)
             outs = stack.outputs()
@@ -112,7 +93,7 @@ def list_sites():
     return render_template("sites/index.html", sites=sites)
 
 
-@app.route("/sites/<string:id>/update", methods=["GET", "POST"])
+@bp.route("/<string:id>/update", methods=["GET", "POST"])
 def update_site(id: str):
     stack_name = id
 
@@ -127,7 +108,7 @@ def update_site(id: str):
             def pulumi_program():
                 create_pulumi_program(str(site_content))
             stack = auto.select_stack(stack_name=stack_name,
-                                      project_name=project_name,
+                                      project_name=current_app.config['PROJECT_NAME'],
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
@@ -140,7 +121,7 @@ def update_site(id: str):
         return redirect(url_for("list_sites"))
 
     stack = auto.select_stack(stack_name=stack_name,
-                              project_name=project_name,
+                              project_name=current_app.config['PROJECT_NAME'],
                               # noop just to get the outputs
                               program=lambda: None)
     outs = stack.outputs()
@@ -149,12 +130,12 @@ def update_site(id: str):
     return render_template("sites/update.html", name=stack_name, content=content)
 
 
-@app.route("/sites/<string:id>/delete", methods=["POST"])
+@bp.route("/<string:id>/delete", methods=["POST"])
 def delete_site(id: str):
     stack_name = id
     try:
         stack = auto.select_stack(stack_name=stack_name,
-                                  project_name=project_name,
+                                  project_name=current_app.config['PROJECT_NAME'],
                                   # noop program for destroy
                                   program=lambda: None)
         stack.destroy(on_output=print)
