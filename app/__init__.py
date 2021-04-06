@@ -13,7 +13,7 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY="secret",
-        PROJECT_NAME="static-site-platyform"
+        PROJECT_NAME="self-service-platyform"
     )
 
     @app.route("/", methods=["GET"])

@@ -59,7 +59,7 @@ def create_site():
         try:
             # create a new stack, generating our pulumi program on the fly from the POST body
             stack = auto.create_stack(stack_name=str(stack_name),
-                                      project_name=g.sites,
+                                      project_name=current_app.config['PROJECT_NAME'],
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
@@ -68,7 +68,7 @@ def create_site():
         except auto.StackAlreadyExistsError:
             flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="danger")
 
-        return redirect(url_for("list_sites"))
+        return redirect(url_for("sites.list_sites"))
 
     return render_template("sites/create.html")
 
@@ -102,7 +102,7 @@ def update_site(id: str):
         if file_url:
             site_content = requests.get(file_url).text
         else:
-            site_content = request.form.get("site-content")
+            site_content = str(request.form.get("site-content"))
 
         try:
             def pulumi_program():
@@ -118,7 +118,7 @@ def update_site(id: str):
             flash(f"Error: site '{stack_name}' already has an update in progress", category="danger")
         except Exception as exn:
             flash(str(exn), category="danger")
-        return redirect(url_for("list_sites"))
+        return redirect(url_for("sites.list_sites"))
 
     stack = auto.select_stack(stack_name=stack_name,
                               project_name=current_app.config['PROJECT_NAME'],
@@ -146,4 +146,4 @@ def delete_site(id: str):
     except Exception as exn:
         flash(str(exn), category="danger")
 
-    return redirect(url_for("list_sites"))
+    return redirect(url_for("sites.list_sites"))

@@ -26,12 +26,12 @@
           </td>
           <td>
             <div class="float-end p-1">
-              <form action="{{ url_for("delete_site", id=site["name"]) }}" method="post">
+              <form action="{{ url_for("sites.delete_site", id=site["name"]) }}" method="post">
                 <input class="btn btn-danger" type="submit" value="Delete">
               </form>
             </div>
             <div class="float-end p-1">
-              <form action="{{ url_for("update_site", id=site["name"]) }}" method="get">
+              <form action="{{ url_for("sites.update_site", id=site["name"]) }}" method="get">
                 <input class="btn btn-primary" type="submit" value="Update">
               </form>
             </div>
