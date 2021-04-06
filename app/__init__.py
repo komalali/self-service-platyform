@@ -27,4 +27,10 @@ def create_app():
     from . import databases
     app.register_blueprint(databases.bp)
 
+    from . import virtual_machines
+    app.register_blueprint(virtual_machines.bp)
+
+    from . import vpcs
+    app.register_blueprint(vpcs.bp)
+
     return app

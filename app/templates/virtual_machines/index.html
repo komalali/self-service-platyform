@@ -1,0 +1,22 @@
+{% extends 'virtual_machines/base.html' %}
+
+{% block header %}
+  {% block title %}Deployed Virtual Machines{% endblock %}
+{% endblock %}
+
+{% block content %}
+  <table class="table">
+    <tbody>
+      {% if not sites %}
+      <div class="container gy-5">
+        <div class="row py-4">
+          <div class="alert alert-secondary" role="alert">
+            <p>No virtual machines are currently deployed. Create one to get started!</p>
+            <a href="#" class="btn btn-primary">Create VM</a>
+          </div>
+        </div>
+      </div>
+      {%  endif %}
+    </tbody>
+  </table>
+{% endblock %}
