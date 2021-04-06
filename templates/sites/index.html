@@ -1,0 +1,43 @@
+{% extends 'sites/base.html' %}
+
+{% block header %}
+  {% block title %}Site Directory{% endblock %}
+{% endblock %}
+
+{% block content %}
+  <table class="table">
+    <tbody>
+      {% if not sites %}
+      <div class="container gy-5">
+        <div class="row py-4">
+          <div class="alert alert-secondary" role="alert">
+            <p>No websites are currently deployed. Create one to get started!</p>
+            <a href="{{ url_for('create_site') }}" class="btn btn-primary">Create static site</a>
+          </div>
+        </div>
+      </div>
+      {%  endif %}
+      {% for site in sites %}
+        <tr>
+          <td class="align-bottom" colspan="4">
+            <div class="p-1">
+              <a href="http://{{ site["url"] }}" class="fs-5 align-bottom">{{ site["name"] }}</a>
+            </div>
+          </td>
+          <td>
+            <div class="float-end p-1">
+              <form action="{{ url_for("delete_site", id=site["name"]) }}" method="post">
+                <input class="btn btn-danger" type="submit" value="Delete">
+              </form>
+            </div>
+            <div class="float-end p-1">
+              <form action="{{ url_for("update_site", id=site["name"]) }}" method="get">
+                <input class="btn btn-primary" type="submit" value="Update">
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

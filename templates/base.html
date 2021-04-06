@@ -10,9 +10,7 @@
       <a href="{{ url_for("list_sites") }}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
         <span class="fs-3">Pulumipus' Self-Service Platyform</span>
       </a>
-      <ul class="nav nav-pills">
-        <li class="nav-item fs-6"><a href="{{ url_for('create_site') }}" class="nav-link active">Create static site</a></li>
-      </ul>
+      {% block nav %}{% endblock %}
     </header>
   </div>
   <section class="container-md px-4">

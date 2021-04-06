@@ -50,6 +50,17 @@ def create_pulumi_program(content: str):
     pulumi.export("website_content", index_content)
 
 
+@app.route("/", methods=["GET"])
+def index():
+    """index page"""
+    return render_template("index.html")
+
+@app.route("/databases", methods=["GET"])
+def list_databases():
+    """index page"""
+    return render_template("databases/index.html")
+
+
 @app.route("/sites/new", methods=["GET", "POST"])
 def create_site():
     """creates new sites"""
@@ -78,7 +89,7 @@ def create_site():
 
         return redirect(url_for("list_sites"))
 
-    return render_template("create.html")
+    return render_template("sites/create.html")
 
 
 @app.route("/sites", methods=["GET"])
@@ -98,7 +109,7 @@ def list_sites():
     except Exception as exn:
         flash(str(exn), category="danger")
 
-    return render_template("index.html", sites=sites)
+    return render_template("sites/index.html", sites=sites)
 
 
 @app.route("/sites/<string:id>/update", methods=["GET", "POST"])
@@ -135,7 +146,7 @@ def update_site(id: str):
     outs = stack.outputs()
     content_output = outs.get("website_content")
     content = content_output.value if content_output else None
-    return render_template("update.html", name=stack_name, content=content)
+    return render_template("sites/update.html", name=stack_name, content=content)
 
 
 @app.route("/sites/<string:id>/delete", methods=["POST"])

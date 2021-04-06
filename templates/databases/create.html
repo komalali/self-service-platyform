@@ -1,0 +1,29 @@
+{% extends 'sites/base.html' %}
+
+{% block header %}
+  {% block title %}Create new database{% endblock %}
+{% endblock %}
+
+{% block content %}
+<section class="p-2">
+  <form method="post">
+    <div class="mb-3">
+      <label for="site-id" class="form-label">Name</label>
+      <input type="text" class="form-control" name="site-id" id="site-id" aria-describedby="nameHelp" required>
+      <div id="nameHelp" class="form-text">Choose a unique name as a label for your website</div>
+    </div>
+    <div class="mb-3">
+      <label for="file-url" class="form-label">File URL</label>
+      <input type="text" class="form-control" id="file-url" name="file-url">
+    </div>
+    <div class="mb-3">
+      <strong>OR</strong>
+    </div>
+    <div class="mb-3">
+      <label for="site-content" class="form-label">Content</label>
+      <textarea class="form-control" name="site-content" id="site-content" rows="5"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+</section>
+{% endblock %}
