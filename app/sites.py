@@ -59,7 +59,7 @@ def create_site():
         try:
             # create a new stack, generating our pulumi program on the fly from the POST body
             stack = auto.create_stack(stack_name=str(stack_name),
-                                      project_name=current_app.config['PROJECT_NAME'],
+                                      project_name=current_app.config["PROJECT_NAME"],
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
@@ -77,16 +77,22 @@ def create_site():
 def list_sites():
     """lists all sites"""
     sites = []
+    org_name = current_app.config["PULUMI_ORG"]
+    project_name = current_app.config["PROJECT_NAME"]
     try:
-        ws = auto.LocalWorkspace(project_settings=auto.ProjectSettings(name=current_app.config['PROJECT_NAME'], runtime="python"))
+        ws = auto.LocalWorkspace(project_settings=auto.ProjectSettings(name=project_name, runtime="python"))
         all_stacks = ws.list_stacks()
         for stack in all_stacks:
             stack = auto.select_stack(stack_name=stack.name,
-                                      project_name=current_app.config['PROJECT_NAME'],
+                                      project_name=project_name,
                                       # no-op program, just to get outputs
                                       program=lambda: None)
             outs = stack.outputs()
-            sites.append({"name": stack.name, "url": outs["website_url"].value})
+            sites.append({
+                "name": stack.name,
+                "url": f"http://{outs['website_url'].value}",
+                "console_url": f"https://app.pulumi.com/{org_name}/{project_name}/{stack.name}",
+            })
     except Exception as exn:
         flash(str(exn), category="danger")
 
@@ -108,7 +114,7 @@ def update_site(id: str):
             def pulumi_program():
                 create_pulumi_program(str(site_content))
             stack = auto.select_stack(stack_name=stack_name,
-                                      project_name=current_app.config['PROJECT_NAME'],
+                                      project_name=current_app.config["PROJECT_NAME"],
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
@@ -135,7 +141,7 @@ def delete_site(id: str):
     stack_name = id
     try:
         stack = auto.select_stack(stack_name=stack_name,
-                                  project_name=current_app.config['PROJECT_NAME'],
+                                  project_name=current_app.config["PROJECT_NAME"],
                                   # noop program for destroy
                                   program=lambda: None)
         stack.destroy(on_output=print)

@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template
 
 from pulumi.x import automation as auto
@@ -13,7 +14,8 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY="secret",
-        PROJECT_NAME="self-service-platyform"
+        PROJECT_NAME="self-service-platyform",
+        PULUMI_ORG=os.environ.get("PULUMI_ORG")
     )
 
     @app.route("/", methods=["GET"])

@@ -34,13 +34,14 @@ First, set up your virtual environment:
 In a terminal window, run the HTTP server that uses Automation API. It will also stream update logs:
 
 ```bash
-$ FLASK_RUN_PORT=1337 FLASK_ENV=development FLASK_APP=app venv/bin/flask run
-* Environment: development
+$ FLASK_RUN_PORT=1337 FLASK_ENV=development FLASK_APP=app PULUMI_ORG=[your-org-name] venv/bin/flask run
+ * Serving Flask app "app" (lazy loading)
+ * Environment: development
  * Debug mode: on
  * Running on http://127.0.0.1:1337/ (Press CTRL+C to quit)
  * Restarting with stat
  * Debugger is active!
- * Debugger PIN: 328-006-235
+ * Debugger PIN: 150-956-496
 ```
 
 Then, in your browser, navigate to `localhost:1337` and you should see a page matching the image below. Click around and start exploring!
