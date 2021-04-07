@@ -1,4 +1,10 @@
-{% extends 'sites/base.html' %}
+{% extends "base.html" %}
+
+{% block nav %}
+  <ul class="nav nav-pills">
+    <li class="nav-item fs-6"><a href="{{ url_for("sites.list_sites") }}" class="nav-link active">Back to site directory</a></li>
+  </ul>
+{% endblock %}
 
 {% block header %}
   {% block title %}Update site '{{ name }}'{% endblock %}

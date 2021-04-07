@@ -1,4 +1,10 @@
-{% extends 'virtual_machines/base.html' %}
+{% extends "base.html" %}
+
+{% block nav %}
+  <ul class="nav nav-pills">
+    <li class="nav-item fs-6"><a href="#" class="nav-link active">Create VM</a></li>
+  </ul>
+{% endblock %}
 
 {% block header %}
   {% block title %}Deployed Virtual Machines{% endblock %}
