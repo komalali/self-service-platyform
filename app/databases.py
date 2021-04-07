@@ -8,3 +8,5 @@ def list_dbs():
     """index page"""
     return render_template("databases/index.html")
 
+# TODO: Implement CRUD endpoints
+# https://github.com/komalali/self-service-platyform/issues/3
