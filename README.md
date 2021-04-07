@@ -45,4 +45,4 @@ $ FLASK_RUN_PORT=1337 FLASK_ENV=development FLASK_APP=app venv/bin/flask run
 
 Then, in your browser, navigate to `localhost:1337` and you should see a page matching the image below. Click around and start exploring!
 
-![Platyform](screenshot.png)
+![Platyform](platyform.png)
