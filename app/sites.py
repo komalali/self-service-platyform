@@ -1,20 +1,12 @@
 import json
 import requests
-from flask import Flask, request, flash, render_template, url_for, redirect
+from flask import g, current_app, Blueprint, request, flash, redirect, url_for, render_template
 
 import pulumi
 from pulumi.x import automation as auto
 from pulumi_aws import s3
 
-def ensure_plugins():
-    ws = auto.LocalWorkspace()
-    ws.install_plugin("aws", "v3.23.0")
-
-
-ensure_plugins()
-app = Flask(__name__)
-app.secret_key = "secret"
-project_name = "static-site-platyform"
+bp = Blueprint("sites", __name__, url_prefix="/sites")
 
 
 # This function defines our pulumi s3 static website in terms of the content that the caller passes in.
@@ -50,7 +42,7 @@ def create_pulumi_program(content: str):
     pulumi.export("website_content", index_content)
 
 
-@app.route("/sites/new", methods=["GET", "POST"])
+@bp.route("/new", methods=["GET", "POST"])
 def create_site():
     """creates new sites"""
     if request.method == "POST":
@@ -67,7 +59,7 @@ def create_site():
         try:
             # create a new stack, generating our pulumi program on the fly from the POST body
             stack = auto.create_stack(stack_name=str(stack_name),
-                                      project_name=project_name,
+                                      project_name=current_app.config['PROJECT_NAME'],
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
@@ -76,21 +68,21 @@ def create_site():
         except auto.StackAlreadyExistsError:
             flash(f"Error: Site with name '{stack_name}' already exists, pick a unique name", category="danger")
 
-        return redirect(url_for("list_sites"))
+        return redirect(url_for("sites.list_sites"))
 
-    return render_template("create.html")
+    return render_template("sites/create.html")
 
 
-@app.route("/sites", methods=["GET"])
+@bp.route("/", methods=["GET"])
 def list_sites():
     """lists all sites"""
     sites = []
     try:
-        ws = auto.LocalWorkspace(project_settings=auto.ProjectSettings(name=project_name, runtime="python"))
+        ws = auto.LocalWorkspace(project_settings=auto.ProjectSettings(name=current_app.config['PROJECT_NAME'], runtime="python"))
         all_stacks = ws.list_stacks()
         for stack in all_stacks:
             stack = auto.select_stack(stack_name=stack.name,
-                                      project_name=project_name,
+                                      project_name=current_app.config['PROJECT_NAME'],
                                       # no-op program, just to get outputs
                                       program=lambda: None)
             outs = stack.outputs()
@@ -98,10 +90,10 @@ def list_sites():
     except Exception as exn:
         flash(str(exn), category="danger")
 
-    return render_template("index.html", sites=sites)
+    return render_template("sites/index.html", sites=sites)
 
 
-@app.route("/sites/<string:id>/update", methods=["GET", "POST"])
+@bp.route("/<string:id>/update", methods=["GET", "POST"])
 def update_site(id: str):
     stack_name = id
 
@@ -110,13 +102,13 @@ def update_site(id: str):
         if file_url:
             site_content = requests.get(file_url).text
         else:
-            site_content = request.form.get("site-content")
+            site_content = str(request.form.get("site-content"))
 
         try:
             def pulumi_program():
                 create_pulumi_program(str(site_content))
             stack = auto.select_stack(stack_name=stack_name,
-                                      project_name=project_name,
+                                      project_name=current_app.config['PROJECT_NAME'],
                                       program=pulumi_program)
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
@@ -126,24 +118,24 @@ def update_site(id: str):
             flash(f"Error: site '{stack_name}' already has an update in progress", category="danger")
         except Exception as exn:
             flash(str(exn), category="danger")
-        return redirect(url_for("list_sites"))
+        return redirect(url_for("sites.list_sites"))
 
     stack = auto.select_stack(stack_name=stack_name,
-                              project_name=project_name,
+                              project_name=current_app.config['PROJECT_NAME'],
                               # noop just to get the outputs
                               program=lambda: None)
     outs = stack.outputs()
     content_output = outs.get("website_content")
     content = content_output.value if content_output else None
-    return render_template("update.html", name=stack_name, content=content)
+    return render_template("sites/update.html", name=stack_name, content=content)
 
 
-@app.route("/sites/<string:id>/delete", methods=["POST"])
+@bp.route("/<string:id>/delete", methods=["POST"])
 def delete_site(id: str):
     stack_name = id
     try:
         stack = auto.select_stack(stack_name=stack_name,
-                                  project_name=project_name,
+                                  project_name=current_app.config['PROJECT_NAME'],
                                   # noop program for destroy
                                   program=lambda: None)
         stack.destroy(on_output=print)
@@ -154,4 +146,4 @@ def delete_site(id: str):
     except Exception as exn:
         flash(str(exn), category="danger")
 
-    return redirect(url_for("list_sites"))
+    return redirect(url_for("sites.list_sites"))
