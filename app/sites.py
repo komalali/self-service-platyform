@@ -1,6 +1,6 @@
 import json
 import requests
-from flask import g, current_app, Blueprint, request, flash, redirect, url_for, render_template
+from flask import current_app, Blueprint, request, flash, redirect, url_for, render_template
 
 import pulumi
 from pulumi.x import automation as auto
