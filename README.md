@@ -6,21 +6,23 @@ In this case, we've used Python, [Flask](https://flask.palletsprojects.com/en/1.
 
 One resource that we expose are static websites, which you can deploy either by passing in a URL to an HTML file or by manually typing out the content. We've exposed all of the CRUD operations, so you can `update` and `delete` your websites as well.
 
-This idea is just a starting point for how you might build out your own infrastructure platform. The static website resource is fully developed, but databases, virtual machines and VPCs are not yet coded to completion. 
+This idea is just a starting point for how you might build out your own infrastructure platform. The static website resource is fully developed, but databases, virtual machines and VPCs are not yet coded to completion.
 
 Alternatively, you could expose this functionality as a [REST API](https://github.com/pulumi/automation-api-examples/tree/main/python/pulumi_over_http), allowing deployments via CLI in addition to a web interface.
 
 Pulumi's Automation API allows you to abstract away all of the "cloud stuff" that your users might not care to know, and bring them just the details they need, at the click of a button. The possibilities are endless!
 
-**WARNING**: This is just a demo! I have not followed *any* security best-practices, so please don't deploy this thing to production.
+**WARNING**: This is just a demo! I have not followed _any_ security best-practices, so please don't deploy this thing to production.
 
 ## Instructions
 
 To run this example you'll need a few pre-reqs:
-1. A Pulumi CLI installation ([v2.10.1](https://www.pulumi.com/docs/get-started/install/versions/) or later)
+
+1. A Pulumi CLI installation ([v3.0.0](https://www.pulumi.com/docs/get-started/install/versions/) or later)
 2. The AWS CLI, with appropriate credentials.
 
 First, set up your virtual environment:
+
 1. ```shell
    $ python3 -m venv venv
    ```
