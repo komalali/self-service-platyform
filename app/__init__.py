@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template
+from flask.helpers import send_from_directory
 
 import pulumi.automation as auto
 
@@ -17,6 +18,10 @@ def create_app():
         PROJECT_NAME="self-service-platyform",
         PULUMI_ORG=os.environ.get("PULUMI_ORG"),
     )
+
+    @app.route('/static/<path:path>')
+    def send_static(path: str):
+        return send_from_directory('static', path)
 
     @app.route("/", methods=["GET"])
     def index():

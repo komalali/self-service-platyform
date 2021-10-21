@@ -115,13 +115,14 @@ def list_sites():
                 program=lambda: None,
             )
             outs = stack.outputs()
-            sites.append(
-                {
-                    "name": stack.name,
-                    "url": f"http://{outs['website_url'].value}",
-                    "console_url": f"https://app.pulumi.com/{org_name}/{project_name}/{stack.name}",
-                }
-            )
+            if 'website_url' in outs:
+                sites.append(
+                    {
+                        "name": stack.name,
+                        "url": f"http://{outs['website_url'].value}",
+                        "console_url": f"https://app.pulumi.com/{org_name}/{project_name}/{stack.name}",
+                    }
+                )
     except Exception as exn:
         flash(str(exn), category="danger")
 
