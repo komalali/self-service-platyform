@@ -5,10 +5,9 @@ import pulumi_aws as aws
 import pulumi.automation as auto
 
 bp = Blueprint("virtual_machines", __name__, url_prefix="/vms")
+instance_types = set(['c5.xlarge', 'p2.xlarge', 'p3.2xlarge'])
 
-def create_pulumi_program(keydata: str):
-    size = 'c5.large'
-
+def create_pulumi_program(keydata: str, instance_type=str):
     ami = aws.ec2.get_ami(most_recent=True,
                   owners=["679593333241"],
                   filters=[aws.GetAmiFilterArgs(name="name", values=["*Deep Learning Base AMI (Ubuntu 18.04)*"])])
@@ -36,11 +35,12 @@ def create_pulumi_program(keydata: str):
     keypair = aws.ec2.KeyPair("dlami-keypair", public_key=public_key)
 
     server = aws.ec2.Instance('dlami-server',
-        instance_type=size,
+        instance_type=instance_type,
         vpc_security_group_ids=[group.id],
         key_name=keypair.id,
         ami=ami.id)
 
+    pulumi.export('instance_type', server.instance_type)
     pulumi.export('public_key', keypair.public_key)
     pulumi.export('public_ip', server.public_ip)
     pulumi.export('public_dns', server.public_dns)
@@ -50,9 +50,10 @@ def create_vm():
     """creates new VM"""
     if request.method == "POST":
         stack_name = request.form.get("vm-id")
-        keydata = request.form.get("vm-keypair-content")
+        keydata = request.form.get("vm-keypair")
+        instance_type = request.form.get("instance_type")
         def pulumi_program():
-            return create_pulumi_program(keydata)
+            return create_pulumi_program(keydata, instance_type)
         try:
             # create a new stack, generating our pulumi program on the fly from the POST body
             stack = auto.create_stack(
@@ -71,7 +72,8 @@ def create_vm():
             )
         return redirect(url_for("virtual_machines.list_vms"))
 
-    return render_template("virtual_machines/create.html")
+    current_app.logger.info(f"Instance types: {instance_types}")
+    return render_template("virtual_machines/create.html", instance_types=instance_types, curr_instance_type=None)
 
 @bp.route("/", methods=["GET"])
 def list_vms():
@@ -113,9 +115,10 @@ def update_vm(id: str):
         current_app.logger.info(f"Updating VM: {stack_name}, form data: {request.form}")
         keydata = request.form.get("vm-keypair")
         current_app.logger.info(f"updating keydata: {keydata}")
+        instance_type = request.form.get("instance_type")
 
         def pulumi_program():
-            return create_pulumi_program(keydata)
+            return create_pulumi_program(keydata, instance_type)
         try:
             stack = auto.select_stack(
                 stack_name=stack_name,
@@ -144,7 +147,8 @@ def update_vm(id: str):
     outs = stack.outputs()
     public_key = outs.get("public_key")
     pk = public_key.value if public_key else None
-    return render_template("virtual_machines/update.html", name=stack_name, public_key=pk)
+    instance_type = outs.get("instance_type")
+    return render_template("virtual_machines/update.html", name=stack_name, public_key=pk, instance_types=instance_types, curr_instance_type=instance_type.value)
 
 @bp.route("/<string:id>/delete", methods=["POST"])
 def delete_vm(id: str):
