@@ -1,4 +1,3 @@
-from posixpath import join
 from flask import (Blueprint, current_app, request, flash,
                    redirect, url_for, render_template)
 
