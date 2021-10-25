@@ -84,7 +84,8 @@ def create_site():
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
             stack.up(on_output=print)
-            flash(f"Successfully created site '{stack_name}'", category="success")
+            flash(
+                f"Successfully created site '{stack_name}'", category="success")
         except auto.StackAlreadyExistsError:
             flash(
                 f"Error: Site with name '{stack_name}' already exists, pick a unique name",
@@ -104,7 +105,8 @@ def list_sites():
     project_name = current_app.config["PROJECT_NAME"]
     try:
         ws = auto.LocalWorkspace(
-            project_settings=auto.ProjectSettings(name=project_name, runtime="python")
+            project_settings=auto.ProjectSettings(
+                name=project_name, runtime="python")
         )
         all_stacks = ws.list_stacks()
         for stack in all_stacks:
@@ -115,13 +117,14 @@ def list_sites():
                 program=lambda: None,
             )
             outs = stack.outputs()
-            sites.append(
-                {
-                    "name": stack.name,
-                    "url": f"http://{outs['website_url'].value}",
-                    "console_url": f"https://app.pulumi.com/{org_name}/{project_name}/{stack.name}",
-                }
-            )
+            if 'website_url' in outs:
+                sites.append(
+                    {
+                        "name": stack.name,
+                        "url": f"http://{outs['website_url'].value}",
+                        "console_url": f"https://app.pulumi.com/{org_name}/{project_name}/{stack.name}",
+                    }
+                )
     except Exception as exn:
         flash(str(exn), category="danger")
 
@@ -152,7 +155,8 @@ def update_site(id: str):
             stack.set_config("aws:region", auto.ConfigValue("us-west-2"))
             # deploy the stack, tailing the logs to stdout
             stack.up(on_output=print)
-            flash(f"Site '{stack_name}' successfully updated!", category="success")
+            flash(f"Site '{stack_name}' successfully updated!",
+                  category="success")
         except auto.ConcurrentUpdateError:
             flash(
                 f"Error: site '{stack_name}' already has an update in progress",

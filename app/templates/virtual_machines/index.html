@@ -2,7 +2,7 @@
 
 {% block nav %}
   <ul class="nav nav-pills">
-    <li class="nav-item fs-6"><a href="#" class="nav-link active">Create VM</a></li>
+    <li class="nav-item fs-6"><a href="{{ url_for("virtual_machines.create_vm") }}" class="nav-link active">Create VM</a></li>
   </ul>
 {% endblock %}
 
@@ -13,16 +13,40 @@
 {% block content %}
   <table class="table">
     <tbody>
-      {% if not sites %}
+      {% if not vms %}
       <div class="container gy-5">
         <div class="row py-4">
           <div class="alert alert-secondary" role="alert">
             <p>No virtual machines are currently deployed. Create one to get started!</p>
-            <a href="#" class="btn btn-primary">Create VM</a>
+            <a href="{{ url_for("virtual_machines.create_vm") }}" class="btn btn-primary">Create VM</a>
           </div>
         </div>
       </div>
       {%  endif %}
+      {% for vm in vms %}
+      <tr>
+        <td class="align-bottom" colspan="4">
+          <div class="p-1">
+            <pre> ssh ubuntu@{{ vm["dns_name"] }} </pre>
+          </div>
+        </td>
+        <td>
+          <div class="float-end p-1">
+            <form action="{{ url_for("virtual_machines.delete_vm", id=vm["name"]) }}" method="post">
+              <input class="btn btn-sm btn-danger" type="submit" value="Delete">
+            </form>
+          </div>
+          <div class="float-end p-1">
+            <form action="{{ url_for("virtual_machines.update_vm", id=vm["name"]) }}" method="get">
+              <input class="btn btn-sm btn-primary" type="submit" value="Edit">
+            </form>
+          </div>
+          <div class="float-end p-1">
+            <a href="{{ vm["console_url"] }}" class="btn btn-sm btn-outline-primary" target="_blank">View in console</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
     </tbody>
   </table>
 {% endblock %}

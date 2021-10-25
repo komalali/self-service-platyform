@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block nav %}
+  <ul class="nav nav-pills">
+    <li class="nav-item fs-6"><a href="{{ url_for("virtual_machines.list_vms") }}" class="nav-link">Back to Virtual Machines directory</a></li>
+  </ul>
+{% endblock %}
+
+{% block header %}
+  {% block title %}Update Virtual Machine '{{ name }}'{% endblock %}
+{% endblock %}
+
+{% block content %}
+  <section class="p-2">
+    <form method="post">
+      <div class="mb-3">
+        <label for="vm-id" class="form-label">Instance Type</label>
+        <select name="instance_type" class="form-control" id="instance_type">
+          {% for instance_type in instance_types %}
+            <option value="{{ instance_type }}" {% if instance_type == curr_instance_type %} selected {% endif %}>
+              {{ instance_type }}
+            </option>
+          {% endfor %}
+          </select>
+      </div>
+      <div class="mb-3">
+        <label for="vm-keypair" class="form-label">Public Key</label>
+        <textarea class="form-control" name="vm-keypair" id="vm-keypair-content" rows="5">{{ public_key }}</textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+  </section>
+{% endblock %}
